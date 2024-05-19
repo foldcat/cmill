@@ -7,6 +7,8 @@ trait CModule extends Module {
   // cc
   def cc: String = "clang"
 
+  def cflags: Seq[String] = Seq.empty
+
   def binName: String
 
   final def compile = T {
@@ -27,8 +29,17 @@ trait CModule extends Module {
         val objPath =
           T.dest / "obj" / objFile
 
-        os.proc(cc, "-Wall", "-Wextra", "-g", "-c", filePath, "-o", objPath)
-          .call(cwd = T.dest)
+        os.proc(
+          cc,
+          cflags,
+          "-Wall",
+          "-Wextra",
+          "-g",
+          "-c",
+          filePath,
+          "-o",
+          objPath
+        ).call(cwd = T.dest)
       }
     }
 
@@ -57,4 +68,5 @@ trait CModule extends Module {
 
 object mod extends CModule {
   def binName = "what"
+  def cflags = Seq("-O3")
 }
