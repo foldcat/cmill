@@ -13,7 +13,7 @@ trait CModule extends Module {
 
   def binName: String
 
-  def compile = T {
+  final def compile = T {
     val allSources = os.walk(sources().path)
     os.makeDir.all(T.dest / "obj")
     allSources.foreach { filePath =>
@@ -49,7 +49,15 @@ trait CModule extends Module {
 
     println(s"built $result binary!")
 
-    PathRef(T.dest)
+    PathRef(T.dest / binName)
+  }
+
+  final def run = T {
+    val bin = compile()
+    println(s"running ${bin.path} binary!")
+    os.proc(bin.path)
+      .call(cwd = T.dest, stdout = os.Inherit, stdin = os.Inherit)
+    bin
   }
 }
 
