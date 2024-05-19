@@ -62,7 +62,6 @@ trait CModule extends Module {
     println(s"running ${bin.path} binary!")
     os.proc(bin.path, args)
       .call(cwd = super.millSourcePath, stdout = os.Inherit, stdin = os.Inherit)
-    bin
   }
 }
 
