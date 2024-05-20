@@ -37,7 +37,7 @@ trait CModule extends Module {
         ).call(cwd = T.dest)
 
         completed += 1
-        println(s"[$completed/$srcCount] compiled $objPath")
+        println(s"[$completed/$srcCount] compiled $filePath")
       }
     }
     PathRef(T.dest)
