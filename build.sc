@@ -12,7 +12,14 @@ trait CModule extends Module {
 
 trait CBinary extends CModule {
   final def compile = T {
-    val allSources = os.walk(sources().path)
+
+    val allSources =
+      os.walk(sources().path)
+        .filter(_.ext == "c")
+
+    val srcCount = allSources.count(z => true)
+    var completed = 0
+
     allSources.foreach { filePath =>
       val fileName = filePath.segments.toList.last
 
@@ -35,6 +42,9 @@ trait CBinary extends CModule {
           "-o",
           objPath
         ).call(cwd = T.dest)
+
+        completed += 1
+        println(s"[$completed/$srcCount] compiled $objPath")
       }
     }
     PathRef(T.dest)
@@ -48,11 +58,14 @@ trait CBinary extends CModule {
     os.proc(cc, cflags, "-o", result, objects)
       .call(cwd = T.dest)
 
+    println(s"assembled $result")
+
     PathRef(T.dest / name)
   }
 
   final def run(args: String*) = T.command {
     val bin = assemble()
+    println(s"executing ${bin.path}")
     os.proc(bin.path, args)
       .call(
         cwd = super.millSourcePath,
