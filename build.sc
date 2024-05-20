@@ -106,29 +106,32 @@ trait CBinary extends CModule {
 
   final def assemble = T {
     val archives = upstream().map(_.path)
-    val archiveInstruct =
+    val archiveDir =
       archives
-        .map(ar =>
-          Seq(
-            "-L".concat({ ar / os.up }.toString), // -L/path/with/stuff.a
-            "-l".concat(
-              os.walk(ar / os.up)
-                .filter(_.ext == "a")
-                .map(inner =>
-                  inner.segments.toList.last
-                    .stripPrefix("lib")
-                    .stripSuffix(".a")
-                )(0) // -lstuff
-            )
-          )
+        .map(arFile =>
+          "-L".concat({ arFile / os.up }.toString) // -L/path/with/stuff.a
         )
-        .flatten
+    val archiveFiles = (
+      archives.map(arFile =>
+        "-l"
+          .concat(
+            os.walk(arFile / os.up)
+              .filter(_.ext == "a")
+              .map(inner =>
+                inner.segments.toList.last
+                  .stripPrefix("lib")
+                  .stripSuffix(".a")
+              )
+          )
+          .mkString("") // -lstuff
+      )
+    )
 
     val objPath = compile().path
     val result = T.dest / name
     val objects = os.walk(objPath).filter(_.ext == "o")
 
-    os.proc(cc, cflags, archiveInstruct, "-o", result, objects)
+    os.proc(cc, cflags, archiveDir, archiveFiles, "-o", result, objects)
       .call(cwd = T.dest)
 
     println(s"assembled $result")
