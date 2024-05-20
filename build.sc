@@ -62,7 +62,7 @@ trait CModule extends Module {
     val result = T.dest / extract
     val objects = os.walk(objPath / "obj").filter(_.ext == "o")
 
-    os.proc(cc, "-o", result, objects)
+    os.proc(cc, cflags, "-o", result, objects)
       .call(cwd = T.dest)
 
     println(s"built $result binary!")
