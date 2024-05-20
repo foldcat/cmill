@@ -43,11 +43,15 @@ trait CModule extends Module {
       }
     }
 
-    println(s"convert all .c files into .o files!")
+    println(s"converted all .c files into .o files!")
 
+    PathRef(T.dest)
+  }
+
+  final def assemble = T {
+    val objPath = compile().path
     val result = T.dest / binName
-
-    val objects = os.walk(T.dest / "obj").filter(_.ext == "o")
+    val objects = os.walk(objPath / "obj").filter(_.ext == "o")
 
     os.proc(cc, "-o", result, objects)
       .call(cwd = T.dest)
@@ -58,7 +62,7 @@ trait CModule extends Module {
   }
 
   final def run(args: String*) = T.command {
-    val bin = compile()
+    val bin = assemble()
     println(s"running ${bin.path} binary!")
     os.proc(bin.path, args)
       .call(cwd = super.millSourcePath, stdout = os.Inherit, stdin = os.Inherit)
