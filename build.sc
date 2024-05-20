@@ -110,7 +110,7 @@ trait CBinary extends CModule {
       archives
         .map(ar =>
           Seq(
-            "-L".concat({ ar / os.up }.toString),
+            "-L".concat({ ar / os.up }.toString), // -L/path/with/stuff.a
             "-l".concat(
               os.walk(ar / os.up)
                 .filter(_.ext == "a")
@@ -118,7 +118,7 @@ trait CBinary extends CModule {
                   inner.segments.toList.last
                     .stripPrefix("lib")
                     .stripSuffix(".a")
-                )(0)
+                )(0) // -lstuff
             )
           )
         )
