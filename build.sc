@@ -5,14 +5,8 @@ trait CModule extends Module {
   def cc: String = "clang"
   def cflags: Seq[String] = Seq.empty
   def name: String
-  def compile: Target[PathRef]
   def assemble: Target[PathRef]
-  def run(args: String*): Command[os.CommandResult]
-}
-
-trait CBinary extends CModule {
-  final def compile = T {
-
+  def compile: Target[PathRef] = T {
     val allSources =
       os.walk(sources().path)
         .filter(_.ext == "c")
@@ -36,7 +30,6 @@ trait CBinary extends CModule {
           cflags,
           "-Wall",
           "-Wextra",
-          "-g",
           "-c",
           filePath,
           "-o",
@@ -49,7 +42,26 @@ trait CBinary extends CModule {
     }
     PathRef(T.dest)
   }
+}
 
+trait CArchive extends CModule {
+  def ar: String = "ar"
+  final def assemble = T {
+    val objPath = compile().path
+    val result = T.dest / name.concat(".a")
+
+    val objects = os.walk(objPath).filter(_.ext == "o")
+
+    os.proc(ar, "rcs", result, objects)
+      .call(cwd = T.dest)
+
+    println(s"assembled $result")
+
+    PathRef(T.dest / name)
+  }
+}
+
+trait CBinary extends CModule {
   final def assemble = T {
     val objPath = compile().path
     val result = T.dest / name
@@ -73,6 +85,11 @@ trait CBinary extends CModule {
         stdin = os.Inherit
       )
   }
+}
+
+object sec extends CArchive {
+  def name = "sec"
+  def cflags = Seq("-O3")
 }
 
 object mod extends CBinary {
