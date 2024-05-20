@@ -48,7 +48,7 @@ trait CArchive extends CModule {
   def ar: String = "ar"
   final def assemble = T {
     val objPath = compile().path
-    val result = T.dest / name.concat(".a")
+    val result = T.dest / "lib".concat(name).concat(".a")
 
     val objects = os.walk(objPath).filter(_.ext == "o")
 
